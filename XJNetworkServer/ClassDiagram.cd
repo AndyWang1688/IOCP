@@ -1,0 +1,151 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="IXJServer" Collapsed="true">
+    <Position X="0.5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAIAAAAAAAAAI=</HashCode>
+      <FileName>D:\work\project\XJQuantizationTradePlatformServer\XJQuantizationTradePlatformServer\Common\IXJServer.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CXJAccept" Collapsed="true">
+    <Position X="12.75" Y="4.75" Width="3" />
+    <TypeIdentifier>
+      <HashCode>AAACAQAAAQAAAAAgAAAAAAAAgAABAAwAAAACQBAQgAA=</HashCode>
+      <FileName>XJAccept.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CXJClient">
+    <Position X="10" Y="4.25" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>IAASAAAAAAAAAAAAAAAAAQAAAAAAAAQAAAACAAAAAAA=</HashCode>
+      <FileName>XJClient.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CXJCompletionPort" Collapsed="true">
+    <Position X="2.75" Y="3.25" Width="3" />
+    <TypeIdentifier>
+      <HashCode>AAAAEAIAADAACAAAAABAAAAAgAAAAAAAIAACAEAIgAI=</HashCode>
+      <FileName>XJCompletionPort.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CXJCustomThreadPool" Collapsed="true">
+    <Position X="6" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>RAACAAAAgAAAAAAACAACAAAAAAAQAAAAAgAAAAAAAAA=</HashCode>
+      <FileName>XJCustomThreadPool.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CXJNetworkServerApp">
+    <Position X="11.75" Y="2.25" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAIAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAA=</HashCode>
+      <FileName>XJNetworkServer.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CXJOverlapped" Collapsed="true">
+    <Position X="3.5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAABAAAJEAAAAAAQAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>XJOverlapped.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CXJOverlappedData" Collapsed="true">
+    <Position X="3.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAACAAAAAAACAAAAAAAAAAAAABAgAIAAAAABACBAE=</HashCode>
+      <FileName>XJOverlappedData.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CXJServer" Collapsed="true">
+    <Position X="0.5" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAQAAAABAAAAAAAAAAAAAAEgAAAIQQAABAIAAI=</HashCode>
+      <FileName>XJServer.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CLock" Collapsed="true">
+    <Position X="11.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAABAAAAAAAAAgAAAAAAAAAgAAAACAA=</HashCode>
+      <FileName>D:\work\project\XJQuantizationTradePlatformServer\XJQuantizationTradePlatformServer\Common\Common.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Cstring" Collapsed="true">
+    <Position X="6" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAABAAAAAAAAAAAQAAkAACAAAAAAABIHAgAAgIAAA=</HashCode>
+      <FileName>D:\work\project\XJQuantizationTradePlatformServer\XJQuantizationTradePlatformServer\Common\Cstring.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CFileUtil" Collapsed="true">
+    <Position X="6" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AACAAAACAAAAAAAAAAAAgAAAAAAAAAAAAAAAABAAAAA=</HashCode>
+      <FileName>D:\work\project\XJQuantizationTradePlatformServer\XJQuantizationTradePlatformServer\Common\FileUtil.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="IXJUnknown" Collapsed="true">
+    <Position X="0.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAABAAAAAAAAAAAAAAAgAAAAAAAABAAAAA=</HashCode>
+      <FileName>D:\work\project\XJQuantizationTradePlatformServer\XJQuantizationTradePlatformServer\Common\IXJUnknown.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CLeeDateTimeSpan" Collapsed="true">
+    <Position X="9.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAQAYEAAAAAAAAAAwAAAIAAAAQAAAAgAAAQQAA=</HashCode>
+      <FileName>D:\work\project\XJQuantizationTradePlatformServer\XJQuantizationTradePlatformServer\Common\LeeDateTime.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CLeeDateTime" Collapsed="true">
+    <Position X="7.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AApgAEAAIAAAAgBABAAAgRAAAAgEAAIAFACgAAgUYAI=</HashCode>
+      <FileName>D:\work\project\XJQuantizationTradePlatformServer\XJQuantizationTradePlatformServer\Common\LeeDateTime.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Logger" Collapsed="true">
+    <Position X="9.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AYQwAEAACAMQAAAABAGCCAAAAAAAAAAAUAAhCEIAAAA=</HashCode>
+      <FileName>D:\work\project\XJQuantizationTradePlatformServer\XJQuantizationTradePlatformServer\Common\Logger.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Struct Name="BarData" Collapsed="true">
+    <Position X="6" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAABCAAAAAAAAAAAACAACAIAAAAAAAAAAIAAAAAAAAA=</HashCode>
+      <FileName>D:\work\project\XJQuantizationTradePlatformServer\XJQuantizationTradePlatformServer\Common\Common.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="TradeSignal" Collapsed="true">
+    <Position X="7.75" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AABAAgAAAAAAAAAEAAACAAAAAgAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>D:\work\project\XJQuantizationTradePlatformServer\XJQuantizationTradePlatformServer\Common\Common.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Typedef Name="PFN_THREADPOOL_CALLBACK" Collapsed="true">
+    <Position X="6" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>XJCustomThreadPool.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Enum Name="IO_OPER_TYPE" Collapsed="true">
+    <Position X="6" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAACAAAAAAAAAAAAAAAAAgAAAAAIAAAAAABAAAAAA=</HashCode>
+      <FileName>XJOverlappedData.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="LOG_LEVEL" Collapsed="true">
+    <Position X="7.75" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BAAEAAAAAAAAAQAAAAACAAIAAQAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>D:\work\project\XJQuantizationTradePlatformServer\XJQuantizationTradePlatformServer\Common\Logger.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Font Name="Microsoft YaHei UI" Size="9" />
+</ClassDiagram>
