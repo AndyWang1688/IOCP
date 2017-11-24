@@ -1,11 +1,13 @@
 #include "stdafx.h"
 #include "XJClientSocket.h"
+#include "../Common/Cstring.h"
 
 
-CXJClientSocket::CXJClientSocket(SOCKET skSocket, SOCKET skListen) : m_skListen(skListen)
+CXJClientSocket::CXJClientSocket(SOCKET skSocket, SOCKET& skListen) : m_skListen(skListen)
 {
 	m_skContext.m_skSocket = skSocket;
 	m_bEffective = false;
+	m_nHeadPackTimes = 0;
 }
 
 
@@ -40,14 +42,25 @@ void CXJClientSocket::AddIOContext(PER_IO_CONTEXT *pIOContext)
 	}
 }
 
-void CXJClientSocket::SetEffective()
+void CXJClientSocket::SetEffective(bool bEffective)
 {
-	m_bEffective = true;
+	m_bEffective = bEffective;
+	m_nHeadPackTimes = 0;
 }
 
 bool CXJClientSocket::IsEffective()
 {
 	return m_bEffective;
+}
+
+int CXJClientSocket::GetHeadPackTimes()
+{
+	return m_nHeadPackTimes;
+}
+
+void CXJClientSocket::IncreaseHeadPackTimes()
+{
+	m_nHeadPackTimes++;
 }
 
 bool CXJClientSocket::PostRecv(PER_IO_CONTEXT *pIOContext)
@@ -87,12 +100,16 @@ bool CXJClientSocket::OnRecv(PER_IO_CONTEXT *pIOContext)
 		&(pIOContext->m_dwTransByte), &(pIOContext->m_dwFlag), NULL, NULL))
 	{
 		int nErr = GetLastError();
-		if (WSAEWOULDBLOCK != nErr)
+		if (WSA_IO_PENDING != nErr)
 		{
 			return false;
 		}
 	}
 
+	Cstring str = szBuff;
+	AfxMessageBox(str, MB_OK);
+
+	PostRecv(pIOContext);
 	return true;
 }
 
@@ -125,6 +142,19 @@ bool CXJClientSocket::OnSend(PER_IO_CONTEXT *pIOContext)
 
 bool CXJClientSocket::PostDisconnect(PER_IO_CONTEXT *pIOContext)
 {
+	SetEffective(false);
+	if (NULL == pIOContext)
+	{
+		CAtlMap<int, PER_IO_CONTEXT*>::CPair *pair = NULL;
+		POSITION ps = m_IOContextMap.GetStartPosition();
+		pIOContext = m_IOContextMap.GetValueAt(ps);
+	}
+
+	if (NULL == pIOContext)
+	{
+		return false;
+	}
+
 	pIOContext->m_nNetworkEvent = FD_CLOSE;
 	shutdown(m_skContext.m_skSocket, SD_BOTH);
 	//注意这个地方利用了DisconnectEx函数的一个特殊属性对SOCKET进行了回收，
@@ -134,8 +164,7 @@ bool CXJClientSocket::PostDisconnect(PER_IO_CONTEXT *pIOContext)
 }
 
 bool CXJClientSocket::OnDisconnect(PER_IO_CONTEXT *pIOContext)
-{
-	m_bEffective = false;
+{	
 	return ReAcceptEx(pIOContext);
 }
 

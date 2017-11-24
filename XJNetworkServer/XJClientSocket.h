@@ -4,14 +4,16 @@
 class CXJClientSocket :	public CXJSocket
 {
 public:
-	CXJClientSocket(SOCKET skSocket, SOCKET skListen);
+	CXJClientSocket(SOCKET skSocket, SOCKET& skListen);
 	~CXJClientSocket();
 
 	PER_SOCKET_CONTEXT *GetSocketContext();
 	void AddIOContext(PER_IO_CONTEXT *pIOContext);
 
-	void SetEffective();
+	void SetEffective(bool bEffective);
 	bool IsEffective();
+	int GetHeadPackTimes();
+	void IncreaseHeadPackTimes();
 
 	bool PostRecv(PER_IO_CONTEXT *pIOContext);
 	bool OnRecv(PER_IO_CONTEXT *pIOContext);
@@ -27,5 +29,6 @@ private:
 	SOCKET &m_skListen;
 	CAtlMap<int, PER_IO_CONTEXT*> m_IOContextMap;
 	bool m_bEffective;
+	int m_nHeadPackTimes;
 };
 

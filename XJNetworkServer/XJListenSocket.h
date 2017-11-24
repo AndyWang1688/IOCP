@@ -2,6 +2,8 @@
 #include "XJSocket.h"
 #include "XJClientSocket.h"
 
+#define _PER_SOCKETPOOL_INCREASE_SIZE 1
+
 class CXJListenSocket :	public CXJSocket
 {
 	CXJListenSocket(long nSocketPoolSize, HANDLE hCompletion);
@@ -20,17 +22,18 @@ public:
 	void DecrementEffectiveSocketCount();
 
 	bool PostAccept();
-	bool PostAccept(PER_SOCKET_CONTEXT *pskContext, PER_IO_CONTEXT *pIOContext);
 	bool OnAccept(PER_IO_CONTEXT *pIOContext);
 
 private:
 	//SOCKET³Ø¼à¿ØÏß³Ì
 	static unsigned _stdcall SocketPoolMonitor(void *pParam);
+	static unsigned _stdcall DetectHeartPackProc(void *pParam);
 
 private:	
 	HANDLE m_hCompletion;
 
-	bool bRunning;
+	bool m_bRunning;
+	HANDLE m_hListenEvent;
 	long m_nSocketPoolSize;
 	long m_nEffectiveSocketCount;
 	CAtlMap<SOCKET, CXJClientSocket*> m_ClientSocketMap;

@@ -22,6 +22,7 @@ CXJCompletionPort::~CXJCompletionPort()
 
 bool CXJCompletionPort::Init(int nThreadMinimum, int nThreadMaximum, int nNetBuffSize)
 {
+	int nLen = sizeof(long);
 	m_nThreadMinimum = nThreadMinimum;
 	m_nThreadMaximum = nThreadMaximum;
 	m_nNetBuffSize = nNetBuffSize;
@@ -63,7 +64,7 @@ bool CXJCompletionPort::Run()
 	}
 
 	//创建监听套接字
-	m_pXJListenSocket = CXJListenSocket::CreateObject(1000, m_hCompletionPort);
+	m_pXJListenSocket = CXJListenSocket::CreateObject(1, m_hCompletionPort);
 	if (m_pXJListenSocket->Startup())
 	{
 		m_pXJListenSocket->Listen();
@@ -128,18 +129,18 @@ void __stdcall CXJCompletionPort::CompletionPortOperationDataCallback(HANDLE hIn
 			break;
 		}
 		
-		//if (IO_OPER_TYPE::IO_ACCEPT == pXJOverlapped->m_ioOperType)
-		//{//连接请求
-		//	((CXJAccept*)pCompletionKey)->DoAccept();
-		//}
-		//else if (IO_OPER_TYPE::IO_RECV == pXJOverlapped->m_ioOperType)
-		//{//接收请求
-		//	((CXJClient*)pCompletionKey)->DoRecv();
-		//}
-		//else if (IO_OPER_TYPE::IO_SEND == pXJOverlapped->m_ioOperType)
-		//{//发送请求
-
-		//}
+		if (FD_ACCEPT == pIOContext->m_nNetworkEvent)
+		{//连接请求	
+			((CXJListenSocket*)pCompletionKey)->OnAccept(pIOContext);
+		}
+		else if (FD_READ == pIOContext->m_nNetworkEvent)
+		{//接收请求
+			((CXJClientSocket*)pCompletionKey)->OnRecv(pIOContext);
+		}
+		else if (FD_CLOSE == pIOContext->m_nNetworkEvent)
+		{//关闭请求
+			((CXJClientSocket*)pCompletionKey)->OnDisconnect(pIOContext);
+		}
 	}
 	
 }

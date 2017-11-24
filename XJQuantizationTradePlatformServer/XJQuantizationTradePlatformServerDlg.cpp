@@ -190,6 +190,7 @@ void CXJQuantizationTradePlatformServerDlg::OnClickedBtnStop()
 	m_pIXJServer->Exit(true);
 	m_pIXJServer->Release();
 	UnLoadLibrary(MID_XJNetworkServer);
+	m_pIXJServer = NULL;
 }
 
 

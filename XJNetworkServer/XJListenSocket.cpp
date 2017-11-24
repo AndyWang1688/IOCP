@@ -5,12 +5,17 @@
 CXJListenSocket::CXJListenSocket(long nSocketPoolSize, HANDLE hCompletion) :m_nSocketPoolSize(nSocketPoolSize), m_hCompletion(hCompletion)
 {
 	m_nEffectiveSocketCount = 0;
-	bRunning = false;
+	m_bRunning = false;
+	m_hListenEvent = WSA_INVALID_EVENT;
 }
 
 CXJListenSocket::~CXJListenSocket()
 {
-	
+	if (WSA_INVALID_EVENT != m_hListenEvent)
+	{
+		WSACloseEvent(m_hListenEvent);
+		m_hListenEvent = WSA_INVALID_EVENT;
+	}
 }
 
 CXJListenSocket* CXJListenSocket::CreateObject(long nSocketPoolSize, HANDLE hCompletion)
@@ -73,52 +78,85 @@ bool CXJListenSocket::CreateSocketPool()
 	m_nEffectiveSocketCount = m_nSocketPoolSize;
 	for (int i = 0; i < m_nSocketPoolSize; i++)
 	{
-		SOCKET sSocket = INVALID_SOCKET;
-		sSocket = Socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-		if (INVALID_SOCKET != sSocket)
-		{
-			PER_IO_CONTEXT *pIOContext = NULL;
-			pIOContext = new PER_IO_CONTEXT();
-			if (NULL != pIOContext)
-			{
-				CXJClientSocket *pClientSocket = NULL;
-				pClientSocket = new CXJClientSocket(sSocket, m_skContext.m_skSocket);
-				if (NULL != pClientSocket)
-				{
-					PER_SOCKET_CONTEXT *pskContext = pClientSocket->GetSocketContext();
-					pIOContext->m_skSocket = sSocket;
-					BindIOCP(sSocket, m_hCompletion);
-					if (PostAccept(pskContext, pIOContext))
-					{
-						pClientSocket->AddIOContext(pIOContext);
-						m_ClientSocketMap[sSocket] = pClientSocket;
-					}
-					else
-					{
-						delete pIOContext;
-						pIOContext = NULL;
-						delete pClientSocket;
-						pClientSocket = NULL;
-					}
-				}				
-			}
-		}
+		PostAccept();
 	}
 
 	//启动监控SOCKET池线程
-	bRunning = true;
+	m_bRunning = true;
+	if (WSA_INVALID_EVENT == (m_hListenEvent = WSACreateEvent()))
+	{	
+		int nErr = GetLastError();
+		return false;
+	}
+	if (SOCKET_ERROR == WSAEventSelect(m_skContext.m_skSocket, m_hListenEvent, FD_ACCEPT))
+	{
+		int nErr = GetLastError();
+		return false;
+	}
 	HANDLE hSocketPoolThread = (HANDLE)_beginthreadex(NULL, 0, SocketPoolMonitor, this, 0, NULL);
+	CloseHandle(hSocketPoolThread);
+	HANDLE hHeartPackThread = (HANDLE)_beginthreadex(NULL, 0, DetectHeartPackProc, this, 0, NULL);
+	CloseHandle(hHeartPackThread);
 	return true;
 }
 
 unsigned _stdcall CXJListenSocket::SocketPoolMonitor(void *pParam)
 {
 	CXJListenSocket *pThis = (CXJListenSocket*)pParam;
-	while (pThis->bRunning)
+	while (true)
 	{
-		if (0 == pThis->m_nEffectiveSocketCount)
+		int nRet = WSAWaitForMultipleEvents(1, &(pThis->m_hListenEvent), FALSE, WSA_INFINITE, FALSE);
+		if (0 == nRet)
 		{
+			if (pThis->m_bRunning)
+			{
+				WSANETWORKEVENTS event;
+				::WSAEnumNetworkEvents(pThis->m_skContext.m_skSocket, pThis->m_hListenEvent, &event);
+				if (event.lNetworkEvents & FD_ACCEPT)                // 处理FD_ACCEPT通知消息  
+				{
+					if (event.iErrorCode[FD_ACCEPT_BIT] == 0)
+					{
+						for (int i = 0; i < _PER_SOCKETPOOL_INCREASE_SIZE; i++)
+						{
+							pThis->PostAccept();
+						}
+					}
+				}
+			}			
+			else
+			{
+				break;
+			}
+		}
+	}
 
+	return 0;
+}
+
+unsigned _stdcall CXJListenSocket::DetectHeartPackProc(void *pParam)
+{
+	CXJListenSocket *pThis = (CXJListenSocket*)pParam;
+	while (pThis->m_bRunning)
+	{
+		CAtlMap<SOCKET, CXJClientSocket*>::CPair *pair = NULL;
+		POSITION ps = pThis->m_ClientSocketMap.GetStartPosition();
+		while (NULL != ps)
+		{
+			pair = pThis->m_ClientSocketMap.GetNext(ps);
+			if (NULL != pair)
+			{
+				if (pair->m_value->IsEffective())
+				{
+					if (5 == pair->m_value->GetHeadPackTimes())
+					{
+						pair->m_value->PostDisconnect(NULL);
+					}
+					else
+					{
+						pair->m_value->IncreaseHeadPackTimes();
+					}
+				}
+			}
 		}
 	}
 
@@ -127,7 +165,8 @@ unsigned _stdcall CXJListenSocket::SocketPoolMonitor(void *pParam)
 
 bool CXJListenSocket::CleanSocketPool()
 {
-	bRunning = false;
+	m_bRunning = false;
+	WSASetEvent(m_hListenEvent);
 
 	CAtlMap<SOCKET, CXJClientSocket*>::CPair *pair = NULL;
 	POSITION ps = m_ClientSocketMap.GetStartPosition();
@@ -160,6 +199,7 @@ bool CXJListenSocket::PostAccept()
 	sSocket = Socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (INVALID_SOCKET != sSocket)
 	{
+		//重叠结构，投递连接成功后与客户端套接字绑定，在客户端套接字实例内释放资源
 		PER_IO_CONTEXT *pIOContext = NULL;
 		pIOContext = new PER_IO_CONTEXT();
 		if (NULL != pIOContext)
@@ -170,8 +210,6 @@ bool CXJListenSocket::PostAccept()
 			{
 				PER_SOCKET_CONTEXT *pskContext = pClientSocket->GetSocketContext();
 				pIOContext->m_skSocket = sSocket;
-				BindIOCP(sSocket, m_hCompletion);
-
 				pIOContext->Reset();
 				pIOContext->m_nNetworkEvent = FD_ACCEPT;
 				if (FALSE == m_WinsockExApi.AcceptEx(m_skContext.m_skSocket, pIOContext->m_skSocket, pskContext->m_szAcceptBuff, 0,
@@ -192,38 +230,13 @@ bool CXJListenSocket::PostAccept()
 						pClientSocket = NULL;
 						return false;
 					}
+
+					pClientSocket->AddIOContext(pIOContext);
+					m_ClientSocketMap[sSocket] = pClientSocket;
 				}
 
-				pClientSocket->AddIOContext(pIOContext);
-				m_ClientSocketMap[sSocket] = pClientSocket;
 				return true;
 			}
-		}
-	}
-}
-
-bool CXJListenSocket::PostAccept(PER_SOCKET_CONTEXT *pskContext, PER_IO_CONTEXT *pIOContext)
-{
-	if ((NULL == pskContext) && (NULL == pIOContext))
-	{
-		return false;
-	}
-
-	pIOContext->Reset();
-	pIOContext->m_nNetworkEvent = FD_ACCEPT;
-	if (FALSE == m_WinsockExApi.AcceptEx(m_skContext.m_skSocket, pIOContext->m_skSocket, pskContext->m_szAcceptBuff, 0,
-		(sizeof(SOCKADDR_IN) + 16), (sizeof(SOCKADDR_IN) + 16), &(pIOContext->m_dwTransByte), &(pIOContext->m_OL)))
-	{
-		int iError = WSAGetLastError();
-		if (ERROR_IO_PENDING != iError
-			&& WSAECONNRESET != iError)
-		{
-			if (INVALID_SOCKET != pIOContext->m_skSocket)
-			{
-				::closesocket(pIOContext->m_skSocket);
-				pIOContext->m_skSocket = INVALID_SOCKET;
-			}
-			return false;
 		}
 	}
 	return true;
@@ -245,7 +258,9 @@ bool CXJListenSocket::OnAccept(PER_IO_CONTEXT *pIOContext)
 	int nLocalAddrLen = sizeof(SOCKADDR_IN);
 	int nRemoteAddrLen = sizeof(SOCKADDR_IN);
 	m_WinsockExApi.GetAcceptExSockaddrs(pskContext->m_szAcceptBuff, 0,	(sizeof(SOCKADDR_IN) + 16), (sizeof(SOCKADDR_IN) + 16),
-		(sockaddr**)(&(pskContext->m_psaLocal)), &nLocalAddrLen, (sockaddr**)(&(pskContext->m_psaLocal)), &nRemoteAddrLen);
+		(sockaddr**)(&(pskContext->m_psaLocal)), &nLocalAddrLen, (sockaddr**)(&(pskContext->m_psaRemote)), &nRemoteAddrLen);
+	
+	pClientSocket->BindIOCP(pskContext->m_skSocket, m_hCompletion);
 
 	int nBufLen = 0;
 	//关闭套接字上的发送缓冲，这样可以提高性能
@@ -274,6 +289,6 @@ bool CXJListenSocket::OnAccept(PER_IO_CONTEXT *pIOContext)
 	}
 
 	//连接成功后设置客户端套接字为有效的
-	pClientSocket->SetEffective();
+	pClientSocket->SetEffective(true);
 	return pClientSocket->PostRecv(pIOContext);
 }
